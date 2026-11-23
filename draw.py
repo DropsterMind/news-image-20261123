@@ -100,8 +100,12 @@ def globe(draw, cx, cy, r):
     draw.rectangle([cx + 52, cy - 78, cx + 62, cy - 52], fill=INK)
     draw.ellipse([cx + 44, cy - 96, cx + 58, cy - 82], fill=GREY)
     draw.ellipse([cx + 56, cy - 108, cx + 72, cy - 92], fill=GREY)
-    # red break line across the pact
-    draw.line([cx - r - 8, cy + r - 14, cx + r + 8, cy - r + 22], fill=RED, width=7)
+    # red X badge: the deal is off
+    bx, by, br = cx + 62, cy - 62, 20
+    draw.ellipse([bx - br, by - br, bx + br, by + br], fill=RED,
+                 outline=WHITE, width=3)
+    draw.line([bx - 9, by - 9, bx + 9, by + 9], fill=WHITE, width=4)
+    draw.line([bx - 9, by + 9, bx + 9, by - 9], fill=WHITE, width=4)
 
 
 def ship_icon(draw, x, y, s):
@@ -126,6 +130,83 @@ def flame_icon(draw, x, y, s):
                   (x + 116 * s, y + 52 * s)], fill=RED)
 
 
+def sea_scene(draw, x0, y0, x1, y1):
+    """Warship on waves, hit by a drone: flat shapes, no text."""
+    mid = (y0 + y1) // 2
+    draw.rectangle([x0, mid + 18, x1, y1], fill=(214, 232, 232))
+    for wy in (mid + 22, mid + 34):
+        draw.arc([x0 + 8, wy, x1 - 8, wy + 16], 0, 180, fill=TEAL, width=4)
+    # hull and mast
+    draw.polygon([(x0 + 60, mid - 2), (x0 + 300, mid - 2),
+                  (x0 + 280, mid + 18), (x0 + 80, mid + 18)], fill=INK)
+    draw.rectangle([x0 + 150, mid - 22, x0 + 172, mid - 2], fill=INK)
+    draw.line([x0 + 161, mid - 38, x0 + 161, mid - 22], fill=INK, width=3)
+    # explosion starburst where the drone hit
+    ex, ey = x0 + 330, mid - 12
+    for dx, dy in ((-16, 0), (16, 0), (0, -14), (0, 14),
+                   (-11, -11), (11, -11), (-11, 11), (11, 11)):
+        draw.line([ex, ey, ex + dx, ey + dy], fill=GOLD, width=5)
+    draw.ellipse([ex - 7, ey - 7, ex + 7, ey + 7], fill=RED)
+    # drone dot above
+    draw.ellipse([x0 + 380, mid - 44, x0 + 392, mid - 32], fill=RED)
+
+
+def refinery_scene(draw, x0, y0, x1, y1):
+    """Oil refinery towers with flames under a sun."""
+    base = y1 - 8
+    draw.ellipse([x1 - 58, y0 + 4, x1 - 22, y0 + 40], fill=GOLD)
+    draw.rectangle([x0, base, x1, y1], fill=(214, 232, 232))
+    for tx, th in ((x0 + 40, 52), (x0 + 110, 66), (x0 + 180, 46),
+                   (x0 + 250, 60)):
+        draw.rectangle([tx, base - th, tx + 34, base], fill=GREY)
+        draw.polygon([(tx + 2, base - th), (tx + 17, base - th - 22),
+                      (tx + 32, base - th)], fill=GOLD)
+        draw.polygon([(tx + 10, base - th), (tx + 17, base - th - 12),
+                      (tx + 24, base - th)], fill=RED)
+    draw.rectangle([x0 + 320, base - 30, x0 + 400, base], fill=INK)
+
+
+def capitol_scene(draw, x0, y0, x1, y1):
+    """US Capitol dome silhouette, centred."""
+    cx = (x0 + x1) // 2
+    base = y1 - 4
+    draw.rectangle([cx - 90, base - 14, cx + 90, base], fill=NAVY)
+    draw.rectangle([cx - 62, base - 26, cx + 62, base - 14], fill=NAVY)
+    draw.pieslice([cx - 44, base - 62, cx + 44, base - 26], 180, 360,
+                  fill=NAVY)
+    draw.rectangle([cx - 4, base - 74, cx + 4, base - 62], fill=NAVY)
+    draw.ellipse([cx - 8, base - 80, cx + 8, base - 64], fill=NAVY)
+
+
+def chip_scene(draw, x0, y0, x1, y1):
+    """A computer chip with pins and circuit traces."""
+    cx, cy = (x0 + x1) // 2, (y0 + y1) // 2
+    for i in range(-1, 2):
+        draw.line([cx - 52, cy + i * 14, cx - 66, cy + i * 14],
+                  fill=GOLD, width=4)
+        draw.line([cx + 52, cy + i * 14, cx + 66, cy + i * 14],
+                  fill=GOLD, width=4)
+    draw.rounded_rectangle([cx - 52, cy - 26, cx + 52, cy + 26],
+                           radius=8, fill=INK)
+    draw.rounded_rectangle([cx - 30, cy - 12, cx + 30, cy + 12],
+                           radius=4, fill=TEAL)
+    draw.line([cx - 30, cy - 12, cx - 44, cy - 12], fill=GOLD, width=3)
+    draw.line([cx + 30, cy + 12, cx + 44, cy + 12], fill=GOLD, width=3)
+
+
+def pitch_scene(draw, x0, y0, x1, y1):
+    """A football pitch strip, goal and ball."""
+    draw.rectangle([x0, y0 + 14, x1, y1 - 4], fill=(46, 160, 110))
+    draw.line([x0, y0 + 14, x1, y0 + 14], fill=WHITE, width=3)
+    gx = x0 + 24
+    draw.line([gx, y0 + 14, gx, y1 - 18], fill=WHITE, width=4)
+    draw.line([gx + 44, y0 + 14, gx + 44, y1 - 18], fill=WHITE, width=4)
+    draw.line([gx, y0 + 14, gx + 44, y0 + 14], fill=WHITE, width=4)
+    bx, by, br = x1 - 52, (y0 + y1) // 2, 17
+    draw.ellipse([bx - br, by - br, bx + br, by + br], fill=WHITE,
+                 outline=INK, width=2)
+    draw.polygon([(bx, by - 7), (bx + 7, by - 2), (bx + 4, by + 6),
+                  (bx - 4, by + 6), (bx - 7, by - 2)], fill=INK)
 def main():
     img = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(img)
@@ -142,52 +223,53 @@ def main():
            font=font(SANS, 20), fill=(205, 212, 226))
 
     # ---- lead story: COP31 ---------------------------------------
-    d.rounded_rectangle([24, 172, 1000, 468], radius=14, fill=CARD,
+    d.rounded_rectangle([24, 172, 1000, 440], radius=14, fill=CARD,
                         outline=LINE, width=2)
-    d.rectangle([24, 172, 38, 468], fill=RED)
-    tag(d, 62, 192, "CLIMATE  •  ANTALYA, TURKEY", RED)
-    headline = font(SERIF_B, 46)
+    d.rectangle([24, 172, 38, 440], fill=RED)
+    tag(d, 62, 188, "CLIMATE  •  ANTALYA, TURKEY", RED)
+    headline = font(SERIF_B, 44)
     lines = wrap(d, "COP31 collapses\nover fossil fuels", headline, 560)
-    draw_lines(d, 62, 232, lines, headline, INK, 54)
-    sub = font(SANS, 22)
+    draw_lines(d, 62, 224, lines, headline, INK, 50)
+    sub = font(SANS, 21)
     sub_lines = wrap(
         d, "EU and island nations reject the Antalya Pact —\n"
            "no deal after the longest climate talks ever.",
         sub, 560)
-    draw_lines(d, 62, 348, sub_lines, sub, GREY, 30)
-    d.text((62, 424), "First major climate breakdown since COP15 in 2009.",
+    draw_lines(d, 62, 330, sub_lines, sub, GREY, 28)
+    d.text((62, 398), "First major climate breakdown since COP15 in 2009.",
            font=font(SANS_B, 19), fill=RED)
-    globe(d, 830, 320, 92)
+    globe(d, 830, 306, 86)
 
     # ---- second row: two stories ----------------------------------
-    def panel(x0, y0, x1, y1, accent, tag_text, head, sub_text, draw_icon):
+    def panel(x0, y0, x1, y1, accent, tag_text, head, sub_text, scene):
         d.rounded_rectangle([x0, y0, x1, y1], radius=14, fill=CARD,
                             outline=LINE, width=2)
         d.rectangle([x0, y0, x0 + 14, y1], fill=accent)
-        tag(d, x0 + 30, y0 + 18, tag_text, accent)
-        hf = font(SERIF_B, 28)
+        tag(d, x0 + 30, y0 + 16, tag_text, accent)
+        hf = font(SERIF_B, 26)
         hl = wrap(d, head, hf, x1 - x0 - 60)
-        y = draw_lines(d, x0 + 30, y0 + 58, hl, hf, INK, 34)
+        y = draw_lines(d, x0 + 30, y0 + 54, hl, hf, INK, 32)
         d.rectangle([x0 + 30, y + 4, x0 + 110, y + 10], fill=accent)
-        sf = font(SANS, 19)
+        sf = font(SANS, 17)
         sl = wrap(d, sub_text, sf, x1 - x0 - 60)
-        draw_lines(d, x0 + 30, y + 20, sl, sf, GREY, 26)
+        draw_lines(d, x0 + 30, y + 20, sl, sf, GREY, 23)
+        scene(d, x0 + 14, y1 - 72, x1, y1)
 
-    panel(24, 486, 500, 736, TEAL, "WAR AT SEA  •  BENGHAZI",
+    panel(24, 452, 500, 730, TEAL, "WAR AT SEA  •  BENGHAZI",
           "Russian warship sunk off Libya",
           "Corvette Merkury hit by suspected Ukrainian sea drones "
           "at the Benghazi naval base; 10 hurt, satellite images "
           "show it submerged.",
-          None)
-    panel(524, 486, 1000, 736, RED, "MIDDLE EAST",
+          sea_scene)
+    panel(524, 452, 1000, 730, RED, "MIDDLE EAST",
           "Houthis claim strikes on Saudi oil refinery",
           "In the US–Iran war, Houthis say they hit a refinery "
           "and radar; at least 6 people injured.",
-          None)
+          refinery_scene)
 
     # ---- third row: three stories ---------------------------------
-    def small_panel(x0, x1, accent, tag_text, head, sub_text, glyph):
-        y0, y1 = 754, 1000
+    def small_panel(x0, x1, accent, tag_text, head, sub_text, scene):
+        y0, y1 = 742, 1000
         d.rounded_rectangle([x0, y0, x1, y1], radius=14, fill=CARD,
                             outline=LINE, width=2)
         d.rectangle([x0, y0, x1, y0 + 10], fill=accent)
@@ -198,19 +280,24 @@ def main():
         sf = font(SANS, 17)
         sl = wrap(d, sub_text, sf, x1 - x0 - 40)
         draw_lines(d, x0 + 20, y + 8, sl, sf, GREY, 23)
+        scene(d, x0 + 2, y1 - 52, x1 - 2, y1 - 2)
 
     small_panel(24, 340, NAVY, "USA  •  WASHINGTON",
                 "Democrats win 258 House seats",
                 "Largest majority since 1992. Hubbard beats Foxx "
-                "in North Carolina.", "★")
+                "in North Carolina.", capitol_scene)
     small_panel(356, 672, GOLD, "TECH  •  NVIDIA",
                 "Nvidia affair: spy contact",
-                "NYT: Alice Huang was in contact with a Chinese "
-                "spy-agency officer, US intelligence says.", "◉")
+                "NYT reports Alice Huang's contact with a "
+                "Chinese spy-agency officer.", chip_scene)
     small_panel(688, 1000, TEAL, "SPORT  •  MANCHESTER",
                 "Liverpool rout Man Utd",
                 "Ten-man United beaten in Pochettino's debut; "
-                "Yoro sent off.", "⚽")
+                "Yoro sent off.", pitch_scene)
+
+    d.text((512, 1006), "23 NOVEMBER 2026  •  ANTALYA  •  BENGHAZI  •  "
+           "RIYADH  •  WASHINGTON  •  MANCHESTER",
+           font=font(SANS_B, 13), fill=GREY, anchor="ma")
 
     img.save(OUT, format="PNG", optimize=True)
     print(f"wrote {OUT} {img.size} {OUT.stat().st_size} bytes")
