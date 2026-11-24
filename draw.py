@@ -1,4 +1,4 @@
-"""Draw the 23 November 2026 world-news poster, v3 (1024x1024 PNG).
+"""Draw the 23 November 2026 world-news poster, v4 (1024x1024 PNG).
 
 Run:  python3 draw.py            -> writes entry.png next to this file.
 The entry program (main.ts, Node stdlib only) copies entry.png to
@@ -6,11 +6,13 @@ The entry program (main.ts, Node stdlib only) copies entry.png to
 fixed fonts, fixed layout, no network, no timestamps, no randomness.
 
 v3 is scene-led, not grid-led (v2 ranked 4916/7226 in round 1, so the
-newspaper grid was judged ordinary). One big hero scene — the corvette
-Merkury sinking off Benghazi at dusk — fills ~45% of the frame; the
-other five stories become a compact "ALSO TODAY" strip underneath.
-The date stays the biggest text on the page, because the judge is
-not told which day the contest is about.
+newspaper grid was judged ordinary). v3 climbed to 4239/9643 in
+round 2 — above the median, but far from the paid top 50. v4 keeps
+the v3 hero scene and every verified word, and gives each of the
+five strip stories a small flat scene of its own (globe, refinery,
+Capitol, chip, pitch) so every story is clear from its picture,
+not just from its headline. The date stays the biggest text on the
+page, because the judge is not told which day the contest is about.
 
 Editorial choices, all verified against reporting on 23 Nov 2026:
  1. Russian corvette Merkury sinks at Benghazi after a suspected
@@ -99,7 +101,9 @@ def burst(draw, cx, cy, reach, color, width):
                   fill=color, width=width)
 
 
-# ---- small icons for the ALSO TODAY strip ----------------------------
+# ---- mini scenes for the ALSO TODAY strip ---------------------------
+# Each scene fills a small tinted band at the bottom of its card, so
+# the story reads from its picture as well as its headline.
 def mini_globe(draw, cx, cy, r=22):
     draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=TEAL)
     draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=INK, width=3)
@@ -113,36 +117,63 @@ def mini_globe(draw, cx, cy, r=22):
     draw.line([bx - 5, by + 5, bx + 5, by - 5], fill=WHITE, width=3)
 
 
-def mini_flame(draw, cx, cy):
-    draw.polygon([(cx - 22, cy + 18), (cx, cy - 20), (cx + 22, cy + 18)],
-                 fill=GOLD)
-    draw.polygon([(cx - 11, cy + 18), (cx, cy - 2), (cx + 11, cy + 18)],
-                 fill=RED)
-    draw.rectangle([cx - 26, cy + 18, cx + 26, cy + 24], fill=GREY)
+def globe_scene(draw, x0, y0, x1, y1):
+    draw.rounded_rectangle([x0, y0, x1, y1], radius=8, fill=(214, 235, 228))
+    mini_globe(draw, (x0 + x1) // 2, (y0 + y1) // 2, r=26)
 
 
-def mini_capitol(draw, cx, cy):
-    draw.rectangle([cx - 30, cy + 4, cx + 30, cy + 16], fill=NAVY)
-    draw.rectangle([cx - 20, cy - 4, cx + 20, cy + 4], fill=NAVY)
-    draw.pieslice([cx - 15, cy - 18, cx + 15, cy - 4], 180, 360, fill=NAVY)
-    draw.rectangle([cx - 2, cy - 24, cx + 2, cy - 18], fill=NAVY)
+def refinery_scene(draw, x0, y0, x1, y1):
+    """Oil refinery towers with flames under a small sun."""
+    draw.rounded_rectangle([x0, y0, x1, y1], radius=8, fill=(247, 232, 205))
+    draw.ellipse([x1 - 30, y0 + 6, x1 - 12, y0 + 24], fill=GOLD)
+    base = y1 - 6
+    cx = (x0 + x1) // 2
+    for tx, th in ((cx - 62, 34), (cx - 14, 44), (cx + 34, 30)):
+        draw.rectangle([tx, base - th, tx + 24, base], fill=GREY)
+        draw.polygon([(tx + 1, base - th), (tx + 12, base - th - 18),
+                      (tx + 23, base - th)], fill=GOLD)
+        draw.polygon([(tx + 7, base - th), (tx + 12, base - th - 9),
+                      (tx + 17, base - th)], fill=RED)
 
 
-def mini_chip(draw, cx, cy):
-    draw.rounded_rectangle([cx - 22, cy - 14, cx + 22, cy + 14], radius=5,
+def capitol_scene(draw, x0, y0, x1, y1):
+    """US Capitol dome, larger than the v3 icon."""
+    draw.rounded_rectangle([x0, y0, x1, y1], radius=8, fill=(226, 231, 240))
+    cx, base = (x0 + x1) // 2, y1 - 6
+    draw.rectangle([cx - 52, base - 12, cx + 52, base], fill=NAVY)
+    draw.rectangle([cx - 36, base - 22, cx + 36, base - 12], fill=NAVY)
+    draw.pieslice([cx - 26, base - 48, cx + 26, base - 22], 180, 360,
+                  fill=NAVY)
+    draw.rectangle([cx - 3, base - 58, cx + 3, base - 48], fill=NAVY)
+    draw.ellipse([cx - 6, base - 64, cx + 6, base - 52], fill=NAVY)
+
+
+def chip_scene(draw, x0, y0, x1, y1):
+    """A computer chip with pins, larger than the v3 icon."""
+    draw.rounded_rectangle([x0, y0, x1, y1], radius=8, fill=(238, 232, 214))
+    cx, cy = (x0 + x1) // 2, (y0 + y1) // 2
+    for dy in (-12, 0, 12):
+        draw.line([cx - 46, cy + dy, cx - 34, cy + dy], fill=GOLD, width=4)
+        draw.line([cx + 34, cy + dy, cx + 46, cy + dy], fill=GOLD, width=4)
+    draw.rounded_rectangle([cx - 34, cy - 20, cx + 34, cy + 20], radius=6,
                            fill=INK)
-    draw.rounded_rectangle([cx - 12, cy - 6, cx + 12, cy + 6], radius=3,
+    draw.rounded_rectangle([cx - 18, cy - 9, cx + 18, cy + 9], radius=3,
                            fill=TEAL)
-    for dy in (-8, 0, 8):
-        draw.line([cx - 30, cy + dy, cx - 22, cy + dy], fill=GOLD, width=3)
-        draw.line([cx + 22, cy + dy, cx + 30, cy + dy], fill=GOLD, width=3)
 
 
-def mini_ball(draw, cx, cy):
-    draw.ellipse([cx - 16, cy - 16, cx + 16, cy + 16], fill=WHITE,
+def pitch_scene(draw, x0, y0, x1, y1):
+    """A football pitch strip, goal and ball."""
+    draw.rounded_rectangle([x0, y0, x1, y1], radius=8, fill=GREEN)
+    draw.line([x0, y0 + 8, x1, y0 + 8], fill=WHITE, width=3)
+    gx = x0 + 18
+    draw.line([gx, y0 + 8, gx, y1 - 10], fill=WHITE, width=4)
+    draw.line([gx + 34, y0 + 8, gx + 34, y1 - 10], fill=WHITE, width=4)
+    draw.line([gx, y0 + 8, gx + 34, y0 + 8], fill=WHITE, width=4)
+    bx, by, br = x1 - 34, (y0 + y1) // 2, 15
+    draw.ellipse([bx - br, by - br, bx + br, by + br], fill=WHITE,
                  outline=INK, width=2)
-    draw.polygon([(cx, cy - 7), (cx + 7, cy - 2), (cx + 4, cy + 6),
-                  (cx - 4, cy + 6), (cx - 7, cy - 2)], fill=INK)
+    draw.polygon([(bx, by - 6), (bx + 6, by - 2), (bx + 4, by + 5),
+                  (bx - 4, by + 5), (bx - 6, by - 2)], fill=INK)
 
 
 # ---- hero scene: the sinking corvette at dusk ------------------------
@@ -242,18 +273,18 @@ def main():
 
     items = [
         ("CLIMATE", RED, "COP31 collapses over fossil fuels",
-         "EU and island nations reject the Antalya Pact.", mini_globe),
+         "EU and island nations reject the Antalya Pact.", globe_scene),
         ("MIDDLE EAST", RED, "Houthis claim strikes on Saudi refinery",
-         "Houthis say they hit a refinery and radar; 6 hurt.", mini_flame),
+         "Houthis say they hit a refinery and radar; 6 hurt.", refinery_scene),
         ("USA", NAVY, "Democrats win 258 House seats",
-         "Largest majority since 1992. Hubbard beats Foxx.", mini_capitol),
+         "Largest majority since 1992. Hubbard beats Foxx.", capitol_scene),
         ("TECH", GOLD, "Nvidia affair: spy contact",
-         "NYT: Alice Huang's contact with a Chinese spy officer.", mini_chip),
+         "NYT: Alice Huang's contact with a Chinese spy officer.", chip_scene),
         ("SPORT", TEAL, "Liverpool rout Man Utd",
-         "Ten-man United beaten in Pochettino's debut.", mini_ball),
+         "Ten-man United beaten in Pochettino's debut.", pitch_scene),
     ]
     col_w = 192
-    for i, (tag_text, accent, head, sub, icon) in enumerate(items):
+    for i, (tag_text, accent, head, sub, scene) in enumerate(items):
         x0 = 24 + i * col_w
         x1 = x0 + col_w - 12
         d.rounded_rectangle([x0, 748, x1, 1000], radius=12, fill=CARD,
@@ -266,7 +297,7 @@ def main():
         sf = font(SANS, 14)
         sl = wrap(d, sub, sf, x1 - x0 - 24)
         draw_lines(d, x0 + 12, y + 6, sl, sf, GREY, 18)
-        icon(d, (x0 + x1) // 2, 958)
+        scene(d, x0 + 4, 932, x1 - 4, 996)
 
     d.text((512, 1008), "23 NOVEMBER 2026  •  ANTALYA  •  BENGHAZI  •  "
            "RIYADH  •  WASHINGTON  •  MANCHESTER",
